@@ -3,6 +3,8 @@
 #include "WindowBase.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/UMG/Public/Components/CanvasPanelSlot.h"
+#include "Runtime/UMG/Public/Components/HorizontalBoxSlot.h"
+#include "Runtime/UMG/Public/Components/VerticalBoxSlot.h"
 #include "Runtime/UMG/Public/Blueprint/WidgetTree.h"
 
 //------------------------------------------------------------------
@@ -21,6 +23,10 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 		Windowskins = WindowskinsTable.Object;
 	}
 	WindowskinName = "Default";
+
+	// The the size of the window
+	Width = 192;
+	Height = 192;
 		
 }
 
@@ -29,6 +35,16 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 //------------------------------------------------------------------
 void UWindowBase::NativeConstruct() {
 	Super::NativeConstruct();
+
+	// Bind delegates here
+}
+
+//------------------------------------------------------------------
+// * Rebuild the Widget
+//------------------------------------------------------------------
+TSharedRef<SWidget> UWindowBase::RebuildWidget() {
+	// Get the original widget
+	TSharedRef<SWidget> Widget = Super::RebuildWidget();
 
 	// Retrieve the Root Component of the widget
 	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
@@ -55,8 +71,25 @@ void UWindowBase::NativeConstruct() {
 	RootWidget->AddChild(BottomMiddleTile);
 	RootWidget->AddChild(BottomRightTile);
 
+	// Set the width if this widget is slotted
+	if (this->Slot != nullptr) {
+		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+			Width = Slot->GetSize().X;
+			Height = Slot->GetSize().Y;
+		} else if (this->Slot->IsA(UHorizontalBoxSlot::StaticClass())) {
+				UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
+				Width = Slot->Size.Value;			
+		} else if (this->Slot->IsA(UVerticalBoxSlot::StaticClass())) {
+			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
+			Height = Slot->Size.Value;
+		}
+	}
+
 	// Draw the Window Background
-	DrawWindowBackground();
+	DrawWindowBackground(Width, Height);
+
+	return Widget;
 }
 
 //------------------------------------------------------------------
@@ -69,24 +102,13 @@ void UWindowBase::ChangeWindowskin(FName NewWindowskin) {
 //------------------------------------------------------------------
 // * Generate the Contents of the Window
 //------------------------------------------------------------------
-void UWindowBase::DrawWindowBackground() {
+void UWindowBase::DrawWindowBackground(float Width, float Height) {
 	// Setup a context string for drawing the windows
 	static const FString ContextString(TEXT("WINDOWSKINS"));
 
 	if (Windowskins != nullptr) {
 		FWindowskin* Windowskin = Windowskins->FindRow<FWindowskin>(WindowskinName, ContextString);
 		if (Windowskin != nullptr) {
-			// Get this widget's width and height
-			float Width, Height;
-			if (this->Slot != nullptr) {
-				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
-				Width = Slot->GetPosition().X;
-				Height = Slot->GetPosition().Y;
-			} else { // Default to a smaller size
-				Width = 1280;
-				Height = 720;
-			}
-			
 
 			// Place the tiles
 			PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH, TILE_HEIGHT);

@@ -83,6 +83,9 @@ public:
 	// Constructs the Widget
 	virtual void NativeConstruct() override;
 
+	// Rebuilt the Widget
+	virtual TSharedRef<SWidget> RebuildWidget() override;
+
 	/** 
 	* Change the windowskin and redraw the windowskin components 
 	* @param NewWindowskin - The name of the new target windowskin
@@ -94,8 +97,10 @@ protected:
 
 	/**
 	* Generates the visual representation of the window.
+	* @param Width - the width of the window
+	* @param Height - the height of the window
 	*/
-	void DrawWindowBackground();
+	void DrawWindowBackground(float Width, float Height);
 
 	/**
 	* Sets the position and size of a window component
@@ -107,6 +112,19 @@ protected:
 	* @param Height - The height of the the tile
 	*/
 	void PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y, float Width, float Height);
+
+	/** The width of the window */
+	UPROPERTY(BlueprintReadOnly, Category = Windows)
+		float Width;
+
+	/** The height of the window */
+	UPROPERTY(BlueprintReadOnly, Category = Windows)
+		float Height;
+
+public:
+	
+	// Called when setting the desired size
+
 	
 private:
 	/** The Data Table from which the windowskin are drawn from */
