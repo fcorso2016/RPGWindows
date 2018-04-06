@@ -2,6 +2,14 @@
 
 #include "WindowBase.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
+#include "Runtime/UMG/Public/Components/CanvasPanelSlot.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetTree.h"
+
+//------------------------------------------------------------------
+// * Constants
+//------------------------------------------------------------------
+const float UWindowBase::TILE_WIDTH = 64.f;
+const float UWindowBase::TILE_HEIGHT = 64.f;
 
 //------------------------------------------------------------------
 // * Object Initilization
@@ -13,7 +21,7 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 		Windowskins = WindowskinsTable.Object;
 	}
 	WindowskinName = "Default";
-	
+		
 }
 
 //------------------------------------------------------------------
@@ -22,18 +30,33 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 void UWindowBase::NativeConstruct() {
 	Super::NativeConstruct();
 
+	// Retrieve the Root Component of the widget
+	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
+
+	// Initialize the Window Components
+	TopLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	TopMiddleTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	TopRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	MiddleLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	CenterTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	MiddleRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	BottomLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	BottomMiddleTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	BottomRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+
+	// Attach the window components to the root
+	RootWidget->AddChild(TopLeftTile);
+	RootWidget->AddChild(TopMiddleTile);
+	RootWidget->AddChild(TopRightTile);
+	RootWidget->AddChild(MiddleLeftTile);
+	RootWidget->AddChild(CenterTile);
+	RootWidget->AddChild(MiddleRightTile);
+	RootWidget->AddChild(BottomLeftTile);
+	RootWidget->AddChild(BottomMiddleTile);
+	RootWidget->AddChild(BottomRightTile);
+
+	// Draw the Window Background
 	DrawWindowBackground();
-}
-
-
-//------------------------------------------------------------------
-// * Generate the Contents of the Window
-//------------------------------------------------------------------
-void UWindowBase::DrawWindowBackground() {
-	if (Windowskins != nullptr) {
-
-	
-	}
 }
 
 //------------------------------------------------------------------
@@ -41,4 +64,53 @@ void UWindowBase::DrawWindowBackground() {
 //------------------------------------------------------------------
 void UWindowBase::ChangeWindowskin(FName NewWindowskin) {
 	WindowskinName = NewWindowskin;
+}
+
+//------------------------------------------------------------------
+// * Generate the Contents of the Window
+//------------------------------------------------------------------
+void UWindowBase::DrawWindowBackground() {
+	// Setup a context string for drawing the windows
+	static const FString ContextString(TEXT("WINDOWSKINS"));
+
+	if (Windowskins != nullptr) {
+		FWindowskin* Windowskin = Windowskins->FindRow<FWindowskin>(WindowskinName, ContextString);
+		if (Windowskin != nullptr) {
+			// Get this widget's width and height
+			float Width, Height;
+			if (this->Slot != nullptr) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+				Width = Slot->GetPosition().X;
+				Height = Slot->GetPosition().Y;
+			} else { // Default to a smaller size
+				Width = 1280;
+				Height = 720;
+			}
+			
+
+			// Place the tiles
+			PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH, TILE_HEIGHT);
+			PlaceTile(TopMiddleTile, Windowskin->TopMiddleTile, TILE_WIDTH, 0.f, Width - TILE_WIDTH * 2, TILE_HEIGHT);
+			PlaceTile(TopRightTile, Windowskin->TopRightTile, Width - TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
+			PlaceTile(MiddleLeftTile, Windowskin->MiddleLeftTile, 0.f, TILE_HEIGHT, TILE_WIDTH, Height - TILE_HEIGHT * 2);
+			PlaceTile(CenterTile, Windowskin->CenterTile, TILE_WIDTH, TILE_HEIGHT, Width - TILE_WIDTH * 2, Height - TILE_HEIGHT * 2);
+			PlaceTile(MiddleRightTile, Windowskin->MiddleRightTile, Width - TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, Height - TILE_HEIGHT * 2);
+			PlaceTile(BottomLeftTile, Windowskin->BottomLeftTile, 0.f, Height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+			PlaceTile(BottomMiddleTile, Windowskin->BottomMiddleTile, TILE_WIDTH, Height - TILE_HEIGHT, Width - TILE_WIDTH * 2, TILE_HEIGHT);
+			PlaceTile(BottomRightTile, Windowskin->BottomRightTile, Width - TILE_WIDTH, Height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+		}
+	}
+}
+
+//------------------------------------------------------------------
+// * Place the Tile into the viewport
+//------------------------------------------------------------------
+void UWindowBase::PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y, float Width, float Height) {
+	if (Tile != nullptr) {
+		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(Tile->Slot);
+		Slot->SetPosition(FVector2D(X, Y));
+		Slot->SetSize(FVector2D(Width, Height));
+		Slot->SetZOrder(-100);
+		Tile->Brush.SetResourceObject(Sprite);
+	}
 }

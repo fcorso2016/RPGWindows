@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Runtime/Engine/Classes/Engine/DataTable.h"
-#include "Runtime/Engine/Classes/Engine/Texture.h"
+#include "Runtime/UMG/Public/Components/Image.h"
+#include "PaperSprite.h"
 #include "WindowBase.generated.h"
 
 /**
@@ -16,31 +17,31 @@ struct FWindowskin : public FTableRowBase {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* TopLeftTile;
+		UPaperSprite* TopLeftTile;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* TopMiddleTile;
+		UPaperSprite* TopMiddleTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* TopRightTile;
+		UPaperSprite* TopRightTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* MiddleLeftTile;
+		UPaperSprite* MiddleLeftTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* CenterTile;
+		UPaperSprite* CenterTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* MiddleRightTile;
+		UPaperSprite* MiddleRightTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* BottomLeftTile;
+		UPaperSprite* BottomLeftTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* BottomMiddleTile;
+		UPaperSprite* BottomMiddleTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UTexture* BottomRightTile;
+		UPaperSprite* BottomRightTile;
 
 };
 
@@ -50,6 +51,30 @@ struct FWindowskin : public FTableRowBase {
 UCLASS(Blueprintable)
 class RPGWINDOWS_API UWindowBase : public UUserWidget {
 	GENERATED_BODY()
+
+	// Height and width values for the tiles
+	static const float TILE_WIDTH;
+	static const float TILE_HEIGHT;
+
+	// Tile objects
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* TopLeftTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* TopMiddleTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* TopRightTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* MiddleLeftTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* CenterTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* MiddleRightTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* BottomLeftTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* BottomMiddleTile;
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* BottomRightTile;
 	
 public:
 	// Constructor
@@ -58,17 +83,30 @@ public:
 	// Constructs the Widget
 	virtual void NativeConstruct() override;
 
-	/**
-	* Generates the visual representation of the window.
-	*/
-	void DrawWindowBackground();
-
 	/** 
 	* Change the windowskin and redraw the windowskin components 
 	* @param NewWindowskin - The name of the new target windowskin
 	*/
 	UFUNCTION(BlueprintCallable, Category = Windows)
 		void ChangeWindowskin(FName NewWindowskin);
+
+protected:
+
+	/**
+	* Generates the visual representation of the window.
+	*/
+	void DrawWindowBackground();
+
+	/**
+	* Sets the position and size of a window component
+	* @param Tile - The tile being opperated on
+	* @param Sprite - The sprite used to draw the tile on the screen
+	* @param X - The x-coordinate of the the tile
+	* @param Y - The y-coordinate of the the tile
+	* @param Width - The width of the the tile
+	* @param Height - The height of the the tile
+	*/
+	void PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y, float Width, float Height);
 	
 private:
 	/** The Data Table from which the windowskin are drawn from */
