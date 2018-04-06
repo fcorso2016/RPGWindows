@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Runtime/Engine/Classes/Engine/DataTable.h"
 #include "Runtime/UMG/Public/Components/Image.h"
+#include "Runtime/UMG/Public/Components/CanvasPanel.h"
 #include "PaperSprite.h"
 #include "WindowBase.generated.h"
 
@@ -56,6 +57,9 @@ class RPGWINDOWS_API UWindowBase : public UUserWidget {
 	static const float TILE_WIDTH;
 	static const float TILE_HEIGHT;
 
+	// Defines the distance between the window edge and where content can be displayed
+	static const float FRAME_THICKNESS;
+
 	// Tile objects
 	UPROPERTY(VisibleDefaultsOnly, Category = Components)
 		UImage* TopLeftTile;
@@ -75,6 +79,12 @@ class RPGWINDOWS_API UWindowBase : public UUserWidget {
 		UImage* BottomMiddleTile;
 	UPROPERTY(VisibleDefaultsOnly, Category = Components)
 		UImage* BottomRightTile;
+
+protected:
+
+	// The main body of the window
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UCanvasPanel* MainBody;
 	
 public:
 	// Constructor
@@ -90,7 +100,7 @@ public:
 	* Change the windowskin and redraw the windowskin components 
 	* @param NewWindowskin - The name of the new target windowskin
 	*/
-	UFUNCTION(BlueprintCallable, Category = Windows)
+	UFUNCTION(BlueprintCallable, Category = Window)
 		void ChangeWindowskin(FName NewWindowskin);
 
 protected:
@@ -103,6 +113,11 @@ protected:
 	void DrawWindowBackground(float Width, float Height);
 
 	/**
+	* Used to update the size of the window when redrawing (only works when slotted in another widget)
+	*/
+	void SetSlottedSize();
+
+	/**
 	* Sets the position and size of a window component
 	* @param Tile - The tile being opperated on
 	* @param Sprite - The sprite used to draw the tile on the screen
@@ -113,26 +128,32 @@ protected:
 	*/
 	void PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y, float Width, float Height);
 
-	/** The width of the window */
-	UPROPERTY(BlueprintReadOnly, Category = Windows)
-		float Width;
-
-	/** The height of the window */
-	UPROPERTY(BlueprintReadOnly, Category = Windows)
-		float Height;
-
 public:
 	
-	// Called when setting the desired size
-
+	/**
+	* Special resizing function that also updates the window as well
+	* @param Size - The new size of the widget
+	*/
+	UFUNCTION(BlueprintCallable, Category = "UserInterface|Viewport")
+		void SetDesiredSizeOfWindow(FVector2D Size);
 	
 private:
 	/** The Data Table from which the windowskin are drawn from */
-	UPROPERTY(EditAnywhere, Category = Windows)
+	UPROPERTY(EditAnywhere, Category = Window)
 		UDataTable* Windowskins;
 
 	/** The row name of the current windowskin */
-	UPROPERTY(EditAnywhere, Category = Windows)
+	UPROPERTY(EditAnywhere, Category = Window)
 		FName WindowskinName;
+
+protected:
+
+	/** The width of the window */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		float Width;
+
+	/** The height of the window */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		float Height;
 
 };

@@ -12,6 +12,7 @@
 //------------------------------------------------------------------
 const float UWindowBase::TILE_WIDTH = 64.f;
 const float UWindowBase::TILE_HEIGHT = 64.f;
+const float UWindowBase::FRAME_THICKNESS = 12.f;
 
 //------------------------------------------------------------------
 // * Object Initilization
@@ -25,9 +26,9 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 	WindowskinName = "Default";
 
 	// The the size of the window
-	Width = 192;
-	Height = 192;
-		
+	Width = 1920;
+	Height = 1080;
+	
 }
 
 //------------------------------------------------------------------
@@ -47,47 +48,46 @@ TSharedRef<SWidget> UWindowBase::RebuildWidget() {
 	TSharedRef<SWidget> Widget = Super::RebuildWidget();
 
 	// Retrieve the Root Component of the widget
-	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
+	UCanvasPanel* RootWidget = Cast<UCanvasPanel>(GetRootWidget());
 
-	// Initialize the Window Components
-	TopLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	TopMiddleTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	TopRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	MiddleLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	CenterTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	MiddleRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	BottomLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	BottomMiddleTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-	BottomRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+	if (RootWidget != nullptr) {
 
-	// Attach the window components to the root
-	RootWidget->AddChild(TopLeftTile);
-	RootWidget->AddChild(TopMiddleTile);
-	RootWidget->AddChild(TopRightTile);
-	RootWidget->AddChild(MiddleLeftTile);
-	RootWidget->AddChild(CenterTile);
-	RootWidget->AddChild(MiddleRightTile);
-	RootWidget->AddChild(BottomLeftTile);
-	RootWidget->AddChild(BottomMiddleTile);
-	RootWidget->AddChild(BottomRightTile);
+		// Initialize the Window Components
+		TopLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		TopMiddleTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		TopRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		MiddleLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		CenterTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		MiddleRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		BottomLeftTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		BottomMiddleTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		BottomRightTile = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
 
-	// Set the width if this widget is slotted
-	if (this->Slot != nullptr) {
-		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
-			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
-			Width = Slot->GetSize().X;
-			Height = Slot->GetSize().Y;
-		} else if (this->Slot->IsA(UHorizontalBoxSlot::StaticClass())) {
-				UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
-				Width = Slot->Size.Value;			
-		} else if (this->Slot->IsA(UVerticalBoxSlot::StaticClass())) {
-			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
-			Height = Slot->Size.Value;
-		}
+		// Attach the window components to the root
+		RootWidget->AddChild(TopLeftTile);
+		RootWidget->AddChild(TopMiddleTile);
+		RootWidget->AddChild(TopRightTile);
+		RootWidget->AddChild(MiddleLeftTile);
+		RootWidget->AddChild(CenterTile);
+		RootWidget->AddChild(MiddleRightTile);
+		RootWidget->AddChild(BottomLeftTile);
+		RootWidget->AddChild(BottomMiddleTile);
+		RootWidget->AddChild(BottomRightTile);
+
+		// Get the size of the window if it is slotted
+		SetSlottedSize();
+
+		// Draw the Window Background
+		DrawWindowBackground(Width, Height);
+
+		// Create the contents of the window
+		MainBody = WidgetTree->ConstructWidget<UCanvasPanel>(UImage::StaticClass(), TEXT("MainBody"));
+		RootWidget->AddChild(MainBody);
+		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(MainBody->Slot);
+		Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+		Slot->SetPosition(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
+		Slot->SetSize(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
 	}
-
-	// Draw the Window Background
-	DrawWindowBackground(Width, Height);
 
 	return Widget;
 }
@@ -125,6 +125,25 @@ void UWindowBase::DrawWindowBackground(float Width, float Height) {
 }
 
 //------------------------------------------------------------------
+// * Sets the size of the window when slotted in a UMG
+//------------------------------------------------------------------
+void UWindowBase::SetSlottedSize() {
+	if (this->Slot != nullptr) {
+		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+			Width = Slot->GetSize().X;
+			Height = Slot->GetSize().Y;
+		} else if (this->Slot->IsA(UHorizontalBoxSlot::StaticClass())) {
+			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
+			Width = Slot->Size.Value;
+		} else if (this->Slot->IsA(UVerticalBoxSlot::StaticClass())) {
+			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
+			Height = Slot->Size.Value;
+		}
+	}
+}
+
+//------------------------------------------------------------------
 // * Place the Tile into the viewport
 //------------------------------------------------------------------
 void UWindowBase::PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y, float Width, float Height) {
@@ -135,4 +154,13 @@ void UWindowBase::PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y
 		Slot->SetZOrder(-100);
 		Tile->Brush.SetResourceObject(Sprite);
 	}
+}
+
+//------------------------------------------------------------------
+// * Resize the widget while also resizing the window as well
+//------------------------------------------------------------------
+void UWindowBase::SetDesiredSizeOfWindow(FVector2D Size) {
+	Width = Size.X;
+	Height = Size.Y;
+	SetDesiredSizeInViewport(Size);
 }
