@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Created by Francesco Corso. Free for both comercial and non-comercial use under Creative Commons Licensing.
 
 #include "RPGWindowsGameModeBase.h"
 

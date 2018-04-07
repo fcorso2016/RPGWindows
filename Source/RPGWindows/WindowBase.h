@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Created by Francesco Corso. Free for both comercial and non-comercial use under Creative Commons Licensing.
 
 #pragma once
 
@@ -79,19 +79,14 @@ class RPGWINDOWS_API UWindowBase : public UUserWidget {
 		UImage* BottomMiddleTile;
 	UPROPERTY(VisibleDefaultsOnly, Category = Components)
 		UImage* BottomRightTile;
-
-protected:
-
-	// The main body of the window
-	UPROPERTY(BlueprintReadOnly, Category = Components, meta = (BindWidget))
-		UCanvasPanel* MainBody;
 	
 public:
 	// Constructor
 	UWindowBase(const FObjectInitializer& ObjectInitializer);
 
-	// Constructs the Widget
-	virtual void NativeConstruct() override;
+	// The main body of the window
+	UPROPERTY(BlueprintReadOnly, Category = Components, meta = (BindWidget))
+		UCanvasPanel* MainBody;
 
 	// Rebuilt the Widget
 	virtual TSharedRef<SWidget> RebuildWidget() override;

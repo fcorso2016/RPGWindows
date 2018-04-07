@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Created by Francesco Corso. Free for both comercial and non-comercial use under Creative Commons Licensing.
 
 #include "WindowBase.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
@@ -29,15 +29,6 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 	Width = 1920;
 	Height = 1080;
 	
-}
-
-//------------------------------------------------------------------
-// * Visual Construction
-//------------------------------------------------------------------
-void UWindowBase::NativeConstruct() {
-	Super::NativeConstruct();
-
-	// Bind delegates here
 }
 
 //------------------------------------------------------------------
