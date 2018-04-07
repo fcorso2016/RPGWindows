@@ -36,5 +36,17 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = Window)
 		virtual int ElementCount();
+
+	/**
+	* Dictates if the player can confirm an option or not
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual bool CanConfirm();
+
+	/**
+	* Dictates if the player can cancel an option or not
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual bool CanCancel();
 	
 };

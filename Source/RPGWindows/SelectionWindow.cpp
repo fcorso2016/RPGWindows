@@ -24,7 +24,10 @@ TSharedRef<SWidget> USelectionWindow::RebuildWidget() {
 // * Set Index
 //------------------------------------------------------------------
 void USelectionWindow::SetIndex(int NewIndex) {
+	// Set the new index correcting out of range values
+	Index = FMath::Clamp(0, NewIndex, ElementCount());
 
+	// Additional selection functionality is done in sub classes
 }
 
 //------------------------------------------------------------------
@@ -32,4 +35,18 @@ void USelectionWindow::SetIndex(int NewIndex) {
 //------------------------------------------------------------------
 int USelectionWindow::ElementCount() {
 	return 0;
+}
+
+//------------------------------------------------------------------
+// * Can you confirm your selection?
+//------------------------------------------------------------------
+bool USelectionWindow::CanConfirm() {
+	return false;
+}
+
+//------------------------------------------------------------------
+// * Can you cancel out of the window
+//------------------------------------------------------------------
+bool USelectionWindow::CanCancel() {
+	return true;
 }
