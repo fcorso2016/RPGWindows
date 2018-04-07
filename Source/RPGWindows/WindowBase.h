@@ -83,7 +83,7 @@ class RPGWINDOWS_API UWindowBase : public UUserWidget {
 protected:
 
 	// The main body of the window
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = Components, meta = (BindWidget))
 		UCanvasPanel* MainBody;
 	
 public:
@@ -116,6 +116,22 @@ protected:
 	* Used to update the size of the window when redrawing (only works when slotted in another widget)
 	*/
 	void SetSlottedSize();
+
+	/**
+	* Place tiles for a canvas based setup
+	* @param Windowskin - the windowskin being rendered
+	* @param Width - the width of the window
+	* @param Height - the height of the window
+	*/
+	void PlaceTilesCanvas(FWindowskin* Windowskin);
+
+	/**
+	* Place tiles for a non-canvas based setup
+	* @param Windowskin - the windowskin being rendered
+	* @param Width - the width of the window
+	* @param Height - the height of the window
+	*/
+	void PlaceTilesNonCanvas(FWindowskin* Windowskin, float Width, float Height);
 
 	/**
 	* Sets the position and size of a window component

@@ -81,12 +81,13 @@ TSharedRef<SWidget> UWindowBase::RebuildWidget() {
 		DrawWindowBackground(Width, Height);
 
 		// Create the contents of the window
-		MainBody = WidgetTree->ConstructWidget<UCanvasPanel>(UImage::StaticClass(), TEXT("MainBody"));
-		RootWidget->AddChild(MainBody);
-		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(MainBody->Slot);
-		Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
-		Slot->SetPosition(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
-		Slot->SetSize(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
+		if (MainBody != nullptr) {
+			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(MainBody->Slot);
+			Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+			Slot->SetPosition(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
+			Slot->SetSize(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
+		}
+		
 	}
 
 	return Widget;
@@ -111,15 +112,17 @@ void UWindowBase::DrawWindowBackground(float Width, float Height) {
 		if (Windowskin != nullptr) {
 
 			// Place the tiles
-			PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH, TILE_HEIGHT);
-			PlaceTile(TopMiddleTile, Windowskin->TopMiddleTile, TILE_WIDTH, 0.f, Width - TILE_WIDTH * 2, TILE_HEIGHT);
-			PlaceTile(TopRightTile, Windowskin->TopRightTile, Width - TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
-			PlaceTile(MiddleLeftTile, Windowskin->MiddleLeftTile, 0.f, TILE_HEIGHT, TILE_WIDTH, Height - TILE_HEIGHT * 2);
-			PlaceTile(CenterTile, Windowskin->CenterTile, TILE_WIDTH, TILE_HEIGHT, Width - TILE_WIDTH * 2, Height - TILE_HEIGHT * 2);
-			PlaceTile(MiddleRightTile, Windowskin->MiddleRightTile, Width - TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, Height - TILE_HEIGHT * 2);
-			PlaceTile(BottomLeftTile, Windowskin->BottomLeftTile, 0.f, Height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
-			PlaceTile(BottomMiddleTile, Windowskin->BottomMiddleTile, TILE_WIDTH, Height - TILE_HEIGHT, Width - TILE_WIDTH * 2, TILE_HEIGHT);
-			PlaceTile(BottomRightTile, Windowskin->BottomRightTile, Width - TILE_WIDTH, Height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+			if (this->Slot != nullptr) {
+				if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+					PlaceTilesCanvas(Windowskin);
+				} else {
+					PlaceTilesNonCanvas(Windowskin, Width, Height);
+				}
+				
+			} else {
+				PlaceTilesNonCanvas(Windowskin, Width, Height);
+			}
+
 		}
 	}
 }
@@ -133,14 +136,71 @@ void UWindowBase::SetSlottedSize() {
 			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
 			Width = Slot->GetSize().X;
 			Height = Slot->GetSize().Y;
-		} else if (this->Slot->IsA(UHorizontalBoxSlot::StaticClass())) {
-			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
-			Width = Slot->Size.Value;
-		} else if (this->Slot->IsA(UVerticalBoxSlot::StaticClass())) {
-			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
-			Height = Slot->Size.Value;
 		}
 	}
+}
+
+//------------------------------------------------------------------
+// * Place tiles for a canvas based setup
+//------------------------------------------------------------------
+void UWindowBase::PlaceTilesCanvas(FWindowskin* Windowskin) {
+	// Place Top Left Tile
+	PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Top Middle Tile
+	UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(TopMiddleTile->Slot);
+	Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 0.f));
+	PlaceTile(TopMiddleTile, Windowskin->TopMiddleTile, TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Top Right Tile
+	Slot = Cast<UCanvasPanelSlot>(TopRightTile->Slot);
+	Slot->SetAnchors(FAnchors(1.f, 0.f, 1.f, 0.f));
+	PlaceTile(TopRightTile, Windowskin->TopRightTile, -TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Middle Left Tile
+	Slot = Cast<UCanvasPanelSlot>(MiddleLeftTile->Slot);
+	Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 1.f));
+	PlaceTile(MiddleLeftTile, Windowskin->MiddleLeftTile, 0.f, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Center Tile
+	Slot = Cast<UCanvasPanelSlot>(CenterTile->Slot);
+	Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+	PlaceTile(CenterTile, Windowskin->CenterTile, TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Middle Right Tile
+	Slot = Cast<UCanvasPanelSlot>(MiddleRightTile->Slot);
+	Slot->SetAnchors(FAnchors(1.f, 0.f, 1.f, 1.f));
+	PlaceTile(MiddleRightTile, Windowskin->MiddleRightTile, -TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Bottom Left Tile
+	Slot = Cast<UCanvasPanelSlot>(BottomLeftTile->Slot);
+	Slot->SetAnchors(FAnchors(0.f, 1.f, 0.f, 1.f));
+	PlaceTile(BottomLeftTile, Windowskin->BottomLeftTile, 0.f, -TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Bottom Middle Tile
+	Slot = Cast<UCanvasPanelSlot>(BottomMiddleTile->Slot);
+	Slot->SetAnchors(FAnchors(0.f, 1.f, 1.f, 1.f));
+	PlaceTile(BottomMiddleTile, Windowskin->BottomMiddleTile, TILE_WIDTH, -TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+
+	// Place the Bottom Right Tile
+	Slot = Cast<UCanvasPanelSlot>(BottomRightTile->Slot);
+	Slot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
+	PlaceTile(BottomRightTile, Windowskin->BottomRightTile, -TILE_WIDTH, -TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+}
+
+//------------------------------------------------------------------
+// * Place tiles for a canvas based setup
+//------------------------------------------------------------------
+void UWindowBase::PlaceTilesNonCanvas(FWindowskin* Windowskin, float Width, float Height) {
+	PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(TopMiddleTile, Windowskin->TopMiddleTile, TILE_WIDTH, 0.f, Width - TILE_WIDTH * 2, TILE_HEIGHT);
+	PlaceTile(TopRightTile, Windowskin->TopRightTile, Width - TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(MiddleLeftTile, Windowskin->MiddleLeftTile, 0.f, TILE_HEIGHT, TILE_WIDTH, Height - TILE_HEIGHT * 2);
+	PlaceTile(CenterTile, Windowskin->CenterTile, TILE_WIDTH, TILE_HEIGHT, Width - TILE_WIDTH * 2, Height - TILE_HEIGHT * 2);
+	PlaceTile(MiddleRightTile, Windowskin->MiddleRightTile, Width - TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, Height - TILE_HEIGHT * 2);
+	PlaceTile(BottomLeftTile, Windowskin->BottomLeftTile, 0.f, Height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(BottomMiddleTile, Windowskin->BottomMiddleTile, TILE_WIDTH, Height - TILE_HEIGHT, Width - TILE_WIDTH * 2, TILE_HEIGHT);
+	PlaceTile(BottomRightTile, Windowskin->BottomRightTile, Width - TILE_WIDTH, Height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 }
 
 //------------------------------------------------------------------
@@ -148,6 +208,8 @@ void UWindowBase::SetSlottedSize() {
 //------------------------------------------------------------------
 void UWindowBase::PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y, float Width, float Height) {
 	if (Tile != nullptr) {
+		
+		// Place tile onto the screen
 		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(Tile->Slot);
 		Slot->SetPosition(FVector2D(X, Y));
 		Slot->SetSize(FVector2D(Width, Height));
