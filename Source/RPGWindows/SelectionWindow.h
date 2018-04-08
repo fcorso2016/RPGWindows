@@ -7,6 +7,40 @@
 #include "SelectionWindow.generated.h"
 
 /**
+* Struct that stores the input handlers for the window
+*/
+USTRUCT(BlueprintType)
+struct FInputActions {
+	GENERATED_BODY()
+
+public:
+
+	/** The Up Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FName UpInput;
+
+	/** The Down Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FName DownInput;
+
+	/** The Left Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FName LeftInput;
+
+	/** The Right Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FName RightInput;
+
+	/** The Confirm Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FName ConfirmInput;
+
+	/** The Cancel Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FName CancelInput;
+};
+
+/**
  * Superclass used for creating menus where the player can selection options from.
  */
 UCLASS()
@@ -38,6 +72,24 @@ public:
 		virtual int ElementCount();
 
 	/**
+	* Get the number of columns in the window
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual int ColumnCount();
+
+	/**
+	* Get the number of rows in the window
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		int RowCount();
+
+	/**
+	* Can the cursor loop around the edges of the window?
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual bool CursorLoop();
+
+	/**
 	* Dictates if the player can confirm an option or not
 	*/
 	UFUNCTION(BlueprintPure, Category = Window)
@@ -48,5 +100,27 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = Window)
 		virtual bool CanCancel();
+
+	/** List of all input mappings */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FInputActions BaseInputs;
+
+	/**
+	* Determines if the key that is currently pressed is mapped to the given action mapping
+	* @param Key - The key being pressed
+	* @param Action - the action binding
+	*/
+	UFUNCTION(BlueprintPure, Category = Input)
+		bool ValidInput(FKey Key, FName Action);
+
+	// Called on a  key being pressed
+	virtual FReply NativeOnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+
+	/**
+	* Parses cursor movement
+	* @param Key - The key that is being depressed
+	* @param Handled - Was the even handled
+	*/
+	void ProcessCursorInput(const FKey& Key, bool& Handled);
 	
 };

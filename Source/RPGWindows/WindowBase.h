@@ -7,6 +7,8 @@
 #include "Runtime/Engine/Classes/Engine/DataTable.h"
 #include "Runtime/UMG/Public/Components/Image.h"
 #include "Runtime/UMG/Public/Components/CanvasPanel.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerController.h"
 #include "PaperSprite.h"
 #include "WindowBase.generated.h"
 
@@ -91,6 +93,19 @@ public:
 	// Rebuilt the Widget
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
+	/**
+	* Gets the controller for the window
+	*/
+	UFUNCTION(BlueprintPure, Category = Input)
+		APlayerController* GetController() const;
+
+	/**
+	* Sets the controller for the window
+	* @param NewController - the new controller object to be used
+	*/
+	UFUNCTION(BlueprintCallable, Category = Input)
+		void SetController(APlayerController* NewController);
+
 	/** 
 	* Change the windowskin and redraw the windowskin components 
 	* @param NewWindowskin - The name of the new target windowskin
@@ -166,5 +181,9 @@ protected:
 	/** The height of the window */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
 		float Height;
+
+	// The controller object used by the menu
+	UPROPERTY()
+		APlayerController* Controller;
 
 };

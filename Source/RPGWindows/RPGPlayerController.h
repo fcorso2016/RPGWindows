@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Runtime/Engine/Classes/GameFramework/PlayerInput.h"
 #include "MenuBase.h"
 #include "RPGPlayerController.generated.h"
 
@@ -43,10 +44,10 @@ public:
 		UMenuBase* GetTopMenu() const;
 
 	/**
-	* Get the keys that correspond to a specific key binding
+	* Get the keys that correspond to a specific action binding
 	*/
 	UFUNCTION(BlueprintPure, Category = Menu)
-		TArray<FInputActionKeyMapping> GetKeyBinding(FName Binding);
+		void GetActionKeyBinding(FName Action, TArray<FInputActionKeyMapping>& Bindings);
 	
 private:
 

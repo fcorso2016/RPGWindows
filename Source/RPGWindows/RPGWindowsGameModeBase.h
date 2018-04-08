@@ -10,11 +10,11 @@
  * 
  */
 UCLASS()
-class RPGWINDOWS_API ARPGWindowsGameModeBase : public AGameModeBase
-{
+class RPGWINDOWS_API ARPGWindowsGameModeBase : public AGameModeBase {
 	GENERATED_BODY()
 	
-	
+public:
+	ARPGWindowsGameModeBase();
 	
 	
 };

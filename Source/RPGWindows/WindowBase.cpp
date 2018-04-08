@@ -85,6 +85,20 @@ TSharedRef<SWidget> UWindowBase::RebuildWidget() {
 }
 
 //------------------------------------------------------------------
+// * Get the Controller Object
+//------------------------------------------------------------------
+APlayerController* UWindowBase::GetController() const {
+	return Controller;
+}
+
+//------------------------------------------------------------------
+// * Set the Controller Object
+//------------------------------------------------------------------
+void UWindowBase::SetController(APlayerController* NewController) {
+	Controller = NewController;
+}
+
+//------------------------------------------------------------------
 // * Change the Windowskin
 //------------------------------------------------------------------
 void UWindowBase::ChangeWindowskin(FName NewWindowskin) {

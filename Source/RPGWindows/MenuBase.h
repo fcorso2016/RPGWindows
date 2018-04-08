@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
+#include "WindowBase.h"
 #include "MenuBase.generated.h"
 
 /**
@@ -15,6 +16,9 @@ class RPGWINDOWS_API UMenuBase : public UUserWidget {
 	GENERATED_BODY()
 
 public:
+
+	// Rebuilt the Widget
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 
 	/**
 	* Gets the controller for the menu
@@ -33,6 +37,11 @@ private:
 	// The controller object used by the menu
 	UPROPERTY()
 		APlayerController* Controller;
+
+public:
+	/** Array of all the menus window */
+	UPROPERTY(BlueprintReadOnly, Category = Windows)
+		TArray<UWindowBase*> Windows;
 
 	
 };

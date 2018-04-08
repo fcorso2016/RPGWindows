@@ -1,7 +1,6 @@
 // Created by Francesco Corso. Free for both comercial and non-comercial use under Creative Commons Licensing.
 
 #include "RPGPlayerController.h"
-#include "Runtime/Engine/Classes/GameFramework/PlayerInput.h"
 
 //------------------------------------------------------------------
 // * The total elements in the window
@@ -42,8 +41,8 @@ UMenuBase* ARPGPlayerController::GetTopMenu() const {
 }
 
 //------------------------------------------------------------------
-// * Get Key Bindings
+// * Get Action Key Bindings
 //------------------------------------------------------------------
-TArray<FInputActionKeyMapping> ARPGPlayerController::GetKeyBinding(FName Binding) {
-	return PlayerInput->GetKeysForAction(Binding);
+void ARPGPlayerController::GetActionKeyBinding(FName Action, TArray<FInputActionKeyMapping>& Bindings) {
+	Bindings = PlayerInput->GetKeysForAction(Action);
 }
