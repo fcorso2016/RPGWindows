@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WindowBase.h"
+#include "Runtime/UMG/Public/Components/UniformGridPanel.h"
 #include "SelectionWindow.generated.h"
 
 /**
@@ -48,11 +49,37 @@ class RPGWINDOWS_API USelectionWindow : public UWindowBase {
 	GENERATED_BODY()
 
 public:
+	// Tile objects
+	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+		UImage* WindowCursor;
+
+	// Contains the elements of the window
+	UPROPERTY(VisibleDefaultsOnly, Category = Components, meta = (BindWidget))
+		UUniformGridPanel* ContentsField;
+
 	// Construct
 	USelectionWindow(const FObjectInitializer& ObjectInitializer);
 
 	// Rebuilt the Widget
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+
+	/**
+	* Add Element to the Contents Field
+	* @param Index - The index of the element being drawn
+	*/
+	void AddElement(int Index);
+
+	/**
+	* Draw the element in the contents field
+	* @param X - The column of the element
+	* @param Y - The row of the elemnt
+	*/
+	virtual void DrawItem(int X, int Y);
+
+	/**
+	* Set the location of the cursor in the window
+	*/
+	void SetCursorPosition();
 
 	/** Get the currently selected index of the window */
 	UPROPERTY(BlueprintReadOnly, Category = Window)
@@ -100,6 +127,18 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = Window)
 		virtual bool CanCancel();
+
+	/**
+	* The width of any given entry in the window
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual float ElementWidth();
+
+	/**
+	* The width of any given entry in the window
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual float ElementHeight();
 
 	/** List of all input mappings */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)

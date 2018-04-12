@@ -3,6 +3,8 @@
 #include "SelectionWindow.h"
 #include "RPGPlayerController.h"
 #include "Runtime/Engine/Classes/GameFramework/PlayerInput.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetTree.h"
+#include "Runtime/UMG/Public/Components/CanvasPanelSlot.h"
 
 //------------------------------------------------------------------
 // * Object Initilization
@@ -27,7 +29,72 @@ TSharedRef<SWidget> USelectionWindow::RebuildWidget() {
 	// Get the original widget
 	TSharedRef<SWidget> Widget = Super::RebuildWidget();
 
+	if (MainBody != nullptr) {
+
+		// Create the Contents of the Window
+		if (ContentsField != nullptr) {
+			MainBody->AddChild(ContentsField);
+			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ContentsField->Slot);
+			Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+			Slot->SetPosition(FVector2D(0.f, 0.f));
+			Slot->SetSize(FVector2D(0.f, 0.f));
+
+			// Add the elements to the Window
+			for (int i = 0; i < ElementCount(); i++) {
+				AddElement(i);
+			}
+		}
+
+		// Create and Anchor the Cursor
+		WindowCursor = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		MainBody->AddChild(WindowCursor);
+		SetCursorPosition();
+
+	}
+
 	return Widget;
+}
+
+//------------------------------------------------------------------
+// * Add an Element to the Contents Field
+//------------------------------------------------------------------
+void USelectionWindow::AddElement(int Index) {
+	if (Index >= 0 && Index < ElementCount()) {
+		DrawItem(Index % ColumnCount(), Index / ColumnCount());
+	}
+}
+
+//------------------------------------------------------------------
+// * Slot an Element into the Contents Field
+//------------------------------------------------------------------
+void USelectionWindow::DrawItem(int X, int Y) {
+	// No base implementation. Only exists because Unreal doesn't
+	// allow for pure virtual functions.
+}
+
+//------------------------------------------------------------------
+// * Set the Location of the Cursor
+//------------------------------------------------------------------
+void USelectionWindow::SetCursorPosition() {
+	// Setup a context string for drawing the windows
+	static const FString ContextString(TEXT("WINDOWSKINS"));
+
+	if (Windowskins != nullptr) {
+		FWindowskin* Windowskin = Windowskins->FindRow<FWindowskin>(WindowskinName, ContextString);
+		if (Windowskin != nullptr) {
+
+			// Check if the cursor exists and place it
+			if (WindowCursor != nullptr) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(WindowCursor->Slot);
+				Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+				Slot->SetPosition(FVector2D(ElementWidth() * (Index % ColumnCount()), ElementHeight() * (Index / ColumnCount())));
+				Slot->SetSize(FVector2D(64, 64));
+				Slot->SetZOrder(-100);
+				WindowCursor->Brush.SetResourceObject(Windowskin->Cursor);
+			}
+
+		}
+	}
 }
 
 //------------------------------------------------------------------
@@ -36,8 +103,7 @@ TSharedRef<SWidget> USelectionWindow::RebuildWidget() {
 void USelectionWindow::SetIndex(int NewIndex) {
 	// Set the new index correcting out of range values
 	Index = FMath::Clamp(0, NewIndex, ElementCount());
-
-	// Additional selection functionality is done in sub classes
+	SetCursorPosition();
 }
 
 //------------------------------------------------------------------
@@ -80,6 +146,29 @@ bool USelectionWindow::CanConfirm() {
 //------------------------------------------------------------------
 bool USelectionWindow::CanCancel() {
 	return true;
+}
+
+
+//------------------------------------------------------------------
+// * Valid Action Input
+//------------------------------------------------------------------
+float USelectionWindow::ElementWidth() {
+	if (MainBody != nullptr) {
+		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(WindowCursor->Slot);
+		return Slot->GetSize().X / ColumnCount();
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------
+// * Valid Action Input
+//------------------------------------------------------------------
+float USelectionWindow::ElementHeight() {
+	if (MainBody != nullptr) {
+		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(WindowCursor->Slot);
+		return Slot->GetSize().Y / ColumnCount();
+	}
+	return 0;
 }
 
 //------------------------------------------------------------------

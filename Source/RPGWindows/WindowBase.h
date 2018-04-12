@@ -46,6 +46,9 @@ struct FWindowskin : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
 		UPaperSprite* BottomRightTile;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
+		UPaperSprite* Cursor;
+
 };
 
 /**
@@ -62,6 +65,7 @@ class RPGWINDOWS_API UWindowBase : public UUserWidget {
 	// Defines the distance between the window edge and where content can be displayed
 	static const float FRAME_THICKNESS;
 
+protected:
 	// Tile objects
 	UPROPERTY(VisibleDefaultsOnly, Category = Components)
 		UImage* TopLeftTile;
@@ -163,7 +167,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UserInterface|Viewport")
 		void SetDesiredSizeOfWindow(FVector2D Size);
 	
-private:
+protected:
 	/** The Data Table from which the windowskin are drawn from */
 	UPROPERTY(EditAnywhere, Category = Window)
 		UDataTable* Windowskins;
@@ -171,8 +175,6 @@ private:
 	/** The row name of the current windowskin */
 	UPROPERTY(EditAnywhere, Category = Window)
 		FName WindowskinName;
-
-protected:
 
 	/** The width of the window */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
