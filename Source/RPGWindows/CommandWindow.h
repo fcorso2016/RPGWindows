@@ -8,6 +8,28 @@
 #include "CommandWindow.generated.h"
 
 /**
+* The information for a command in the game.
+*/
+USTRUCT(BlueprintType)
+struct FWindowCommand {
+	GENERATED_BODY()
+
+public:
+	/** The name of the command */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Commands)
+		FText Name;
+
+	/** The access code used for binding */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Commands)
+		FName InternalName;
+
+	/** Is the command selectabled? */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Commands)
+		bool Selectable = true;
+
+};
+
+/**
  * Window display a list of commands to be selected from
  */
 UCLASS()
@@ -29,6 +51,6 @@ public:
 private:
 	/** The list of commands of the window */
 	UPROPERTY(EditAnywhere, Category = Commands)
-		TArray<FText> CommandList;
+		TArray<FWindowCommand> CommandList;
 	
 };

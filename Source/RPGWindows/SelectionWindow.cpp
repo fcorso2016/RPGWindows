@@ -17,11 +17,22 @@
 #include "Runtime/Engine/Classes/Engine/Engine.h"
 
 //------------------------------------------------------------------
+// * Constants
+//------------------------------------------------------------------
+const float USelectionWindow::CURSOR_X_OFFSET = -24.f;
+const float USelectionWindow::CURSOR_Y_OFFSET = 24.f;
+const float USelectionWindow::CURSOR_WIDTH = 24.f;
+const float USelectionWindow::CURSOR_HEIGHT = 24.f;
+
+//------------------------------------------------------------------
 // * Object Initilization
 //------------------------------------------------------------------
 USelectionWindow::USelectionWindow(const FObjectInitializer& ObjectInitializer) : UWindowBase(ObjectInitializer) {
 	// Make is so the widget is focusable
 	bIsFocusable = true;
+
+	// Set the cursor scale
+	CursorScale = 1;
 
 	// Set the index of the window to 0
 	SetIndex(0);
@@ -139,8 +150,8 @@ void USelectionWindow::SetCursorPosition() {
 			if (WindowCursor != nullptr) {
 				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(WindowCursor->Slot);
 				Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
-				Slot->SetPosition(FVector2D(ElementWidth() * (Index % ColumnCount()), ElementHeight() * (Index / ColumnCount())));
-				Slot->SetSize(FVector2D(64, 64));
+				Slot->SetPosition(FVector2D(ElementWidth() * (Index % ColumnCount()) + CURSOR_X_OFFSET * CursorScale, ElementHeight() * (Index / ColumnCount()) + CURSOR_Y_OFFSET * CursorScale));
+				Slot->SetSize(FVector2D(CURSOR_WIDTH * CursorScale, CURSOR_HEIGHT * CursorScale));
 				Slot->SetZOrder(-100);
 				WindowCursor->Brush.SetResourceObject(Windowskin->Cursor);
 			}
@@ -222,31 +233,27 @@ bool USelectionWindow::CanCancel() {
 // * Valid Action Input
 //------------------------------------------------------------------
 float USelectionWindow::ElementWidth() {
-	if (MainBody != nullptr) {
-		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(WindowCursor->Slot);
-		return Slot->GetSize().X / ColumnCount();
+	if (ContentsField != nullptr) {
+		return ContentsField->GetDesiredSize().X / ColumnCount();
 	}
-	return 0;
+	return 0.f;
 }
 
 //------------------------------------------------------------------
 // * Valid Action Input
 //------------------------------------------------------------------
 float USelectionWindow::ElementHeight() {
-	if (MainBody != nullptr) {
-		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(WindowCursor->Slot);
-		return Slot->GetSize().Y / ColumnCount();
+	if (ContentsField != nullptr) {
+		return ContentsField->GetDesiredSize().Y / RowCount();
 	}
-	return 0;
+	return 0.f;
 }
 
 //------------------------------------------------------------------
 // * Valid Action Input
 //------------------------------------------------------------------
 bool USelectionWindow::ValidInput(FKey Key, FName Action) {
-	if (!GetActive() && Controller->IsA(ARPGPlayerController::StaticClass())) {
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
+	if (GetActive() && Controller->IsA(ARPGPlayerController::StaticClass())) {
 		ARPGPlayerController* RPGController = Cast<ARPGPlayerController>(Controller);
 		TArray<FInputActionKeyMapping> ActionBindings;
 		RPGController->GetActionKeyBinding(Action, ActionBindings);
@@ -272,6 +279,11 @@ FReply USelectionWindow::NativeOnKeyDown(const FGeometry& MyGeometry, const FKey
 	// Parse Possible Inputs
 	FKey Key = InKeyEvent.GetKey();
 	ProcessCursorInput(Key, Handled);
+	if (ValidInput(Key, BaseInputs.ConfirmInput)) {
+		ConfirmDelegate.ExecuteIfBound();
+	} else if (ValidInput(Key, BaseInputs.CancelInput)) {
+		CancelDelegate.ExecuteIfBound();
+	}
 	
 
 	if (Handled) {

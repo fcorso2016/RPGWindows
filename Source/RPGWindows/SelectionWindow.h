@@ -7,6 +7,12 @@
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
 #include "SelectionWindow.generated.h"
 
+/** Delegate for when the user presses confirm */
+DECLARE_DELEGATE(FProcessConfirm);
+
+/** Delegate for when the user presses cancel */
+DECLARE_DELEGATE(FProcessCancel);
+
 /**
 * Struct that stores the input handlers for the window
 */
@@ -47,6 +53,12 @@ public:
 UCLASS()
 class RPGWINDOWS_API USelectionWindow : public UWindowBase {
 	GENERATED_BODY()
+
+	// Information about the cursor in the window
+	static const float CURSOR_X_OFFSET;
+	static const float CURSOR_Y_OFFSET;
+	static const float CURSOR_WIDTH;
+	static const float CURSOR_HEIGHT;
 
 public:
 	// Tile objects
@@ -143,9 +155,6 @@ public:
 		virtual bool CursorLoop();
 
 	/**
-	*/
-
-	/**
 	* Dictates if the player can confirm an option or not
 	*/
 	UFUNCTION(BlueprintPure, Category = Window)
@@ -190,5 +199,17 @@ public:
 	* @param Handled - Was the even handled
 	*/
 	void ProcessCursorInput(const FKey& Key, bool& Handled);
+
+	/** The delegate bound to confirm */
+	FProcessConfirm ConfirmDelegate;
+
+	/** The delegate bound to cancel */
+	FProcessCancel CancelDelegate;
+
+protected:
+
+	/** The scale of the cursor in the window */
+	UPROPERTY(EditAnywhere, Category = Window, meta = (UIMin = 1, ClampMin = 1))
+		int CursorScale;
 	
 };

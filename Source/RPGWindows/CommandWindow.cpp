@@ -12,7 +12,7 @@ void UCommandWindow::DrawItem(int Index) {
 
 	if (ContentsFieldIsValid()) {
 		UTextBlock* TextBlock = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-		TextBlock->SetText(CommandList[Index]);
+		TextBlock->SetText(CommandList[Index].Name);
 		SlotWidget(TextBlock, Index);
 	}
 }

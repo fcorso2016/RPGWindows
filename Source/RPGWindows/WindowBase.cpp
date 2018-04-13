@@ -19,11 +19,13 @@ const float UWindowBase::FRAME_THICKNESS = 12.f;
 //------------------------------------------------------------------
 UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer) {
 	// Initialize Windowskin Information
-	ConstructorHelpers::FObjectFinder<UDataTable> WindowskinsTable(TEXT("/Game/Graphics/Windows/Windowskins.Windowskins"));
+	ConstructorHelpers::FObjectFinder<UDataTable> WindowskinsTable(TEXT("/Game/Data/Windowskins.Windowskins"));
 	if (WindowskinsTable.Succeeded()) {
 		Windowskins = WindowskinsTable.Object;
 	}
 	WindowskinName = "Default";
+	WindowScale = 1;
+	FrameScale = 1;
 
 	// The the size of the window
 	Width = 1920;
@@ -75,8 +77,8 @@ TSharedRef<SWidget> UWindowBase::RebuildWidget() {
 		if (MainBody != nullptr) {
 			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(MainBody->Slot);
 			Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
-			Slot->SetPosition(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
-			Slot->SetSize(FVector2D(FRAME_THICKNESS, FRAME_THICKNESS));
+			Slot->SetPosition(FVector2D(FRAME_THICKNESS * FrameScale, FRAME_THICKNESS * FrameScale));
+			Slot->SetSize(FVector2D(FRAME_THICKNESS * FrameScale, FRAME_THICKNESS * FrameScale));
 		}
 		
 	}
@@ -150,47 +152,47 @@ void UWindowBase::SetSlottedSize() {
 //------------------------------------------------------------------
 void UWindowBase::PlaceTilesCanvas(FWindowskin* Windowskin) {
 	// Place Top Left Tile
-	PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(TopLeftTile, Windowskin->TopLeftTile, 0.f, 0.f, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Top Middle Tile
 	UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(TopMiddleTile->Slot);
 	Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 0.f));
-	PlaceTile(TopMiddleTile, Windowskin->TopMiddleTile, TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(TopMiddleTile, Windowskin->TopMiddleTile, TILE_WIDTH * WindowScale, 0.f, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Top Right Tile
 	Slot = Cast<UCanvasPanelSlot>(TopRightTile->Slot);
 	Slot->SetAnchors(FAnchors(1.f, 0.f, 1.f, 0.f));
-	PlaceTile(TopRightTile, Windowskin->TopRightTile, -TILE_WIDTH, 0.f, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(TopRightTile, Windowskin->TopRightTile, -TILE_WIDTH * WindowScale, 0.f, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Middle Left Tile
 	Slot = Cast<UCanvasPanelSlot>(MiddleLeftTile->Slot);
 	Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 1.f));
-	PlaceTile(MiddleLeftTile, Windowskin->MiddleLeftTile, 0.f, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(MiddleLeftTile, Windowskin->MiddleLeftTile, 0.f, TILE_HEIGHT * WindowScale, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Center Tile
 	Slot = Cast<UCanvasPanelSlot>(CenterTile->Slot);
 	Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
-	PlaceTile(CenterTile, Windowskin->CenterTile, TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(CenterTile, Windowskin->CenterTile, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Middle Right Tile
 	Slot = Cast<UCanvasPanelSlot>(MiddleRightTile->Slot);
 	Slot->SetAnchors(FAnchors(1.f, 0.f, 1.f, 1.f));
-	PlaceTile(MiddleRightTile, Windowskin->MiddleRightTile, -TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(MiddleRightTile, Windowskin->MiddleRightTile, -TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Bottom Left Tile
 	Slot = Cast<UCanvasPanelSlot>(BottomLeftTile->Slot);
 	Slot->SetAnchors(FAnchors(0.f, 1.f, 0.f, 1.f));
-	PlaceTile(BottomLeftTile, Windowskin->BottomLeftTile, 0.f, -TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(BottomLeftTile, Windowskin->BottomLeftTile, 0.f, -TILE_HEIGHT * WindowScale, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Bottom Middle Tile
 	Slot = Cast<UCanvasPanelSlot>(BottomMiddleTile->Slot);
 	Slot->SetAnchors(FAnchors(0.f, 1.f, 1.f, 1.f));
-	PlaceTile(BottomMiddleTile, Windowskin->BottomMiddleTile, TILE_WIDTH, -TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(BottomMiddleTile, Windowskin->BottomMiddleTile, TILE_WIDTH * WindowScale, -TILE_HEIGHT * WindowScale, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 
 	// Place the Bottom Right Tile
 	Slot = Cast<UCanvasPanelSlot>(BottomRightTile->Slot);
 	Slot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
-	PlaceTile(BottomRightTile, Windowskin->BottomRightTile, -TILE_WIDTH, -TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+	PlaceTile(BottomRightTile, Windowskin->BottomRightTile, -TILE_WIDTH * WindowScale, -TILE_HEIGHT * WindowScale, TILE_WIDTH * WindowScale, TILE_HEIGHT * WindowScale);
 }
 
 //------------------------------------------------------------------

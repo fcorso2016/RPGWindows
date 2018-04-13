@@ -6,8 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Runtime/Engine/Classes/Engine/DataTable.h"
 #include "Runtime/UMG/Public/Components/Image.h"
+#include "Runtime/Engine/Classes/Engine/Texture.h"
 #include "Runtime/UMG/Public/Components/CanvasPanel.h"
-#include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerController.h"
 #include "PaperSprite.h"
 #include "WindowBase.generated.h"
@@ -47,7 +47,7 @@ struct FWindowskin : public FTableRowBase {
 		UPaperSprite* BottomRightTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Windows)
-		UPaperSprite* Cursor;
+		UTexture* Cursor;
 
 };
 
@@ -175,6 +175,14 @@ protected:
 	/** The row name of the current windowskin */
 	UPROPERTY(EditAnywhere, Category = Window)
 		FName WindowskinName;
+
+	/** The scale of the window skin */
+	UPROPERTY(EditAnywhere, Category = Window, meta = (UIMin = 1, ClampMin = 1))
+		int WindowScale;
+
+	/** The scale of the window skin */
+	UPROPERTY(EditAnywhere, Category = Window, meta = (UIMin = 1, ClampMin = 1))
+		int FrameScale;
 
 	/** The width of the window */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
