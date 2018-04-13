@@ -10,6 +10,7 @@ UMenuBase* ARPGPlayerController::AddMenu(TSubclassOf<UMenuBase> MenuClass) {
 	NewMenu->SetController(this);
 	NewMenu->AddToViewport(9999); // Z-order, this just makes it render on the very top.
 	MenuStack.Add(NewMenu);
+	SetInputMode(FInputModeUIOnly());
 	return NewMenu;
 }
 
@@ -21,6 +22,9 @@ void ARPGPlayerController::PopMenu() {
 	UMenuBase* MenuToRemove = GetTopMenu();
 	MenuToRemove->RemoveFromViewport();
 	MenuStack.Pop();
+	if (MenuStack.Num() == 0) {
+		SetInputMode(FInputModeGameOnly());
+	}
 }
 
 //------------------------------------------------------------------

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WindowBase.h"
-#include "Runtime/UMG/Public/Components/UniformGridPanel.h"
+#include "Runtime/UMG/Public/Components/PanelWidget.h"
 #include "SelectionWindow.generated.h"
 
 /**
@@ -55,13 +55,18 @@ public:
 
 	// Contains the elements of the window
 	UPROPERTY(VisibleDefaultsOnly, Category = Components, meta = (BindWidget))
-		UUniformGridPanel* ContentsField;
+		UPanelWidget* ContentsField;
 
 	// Construct
 	USelectionWindow(const FObjectInitializer& ObjectInitializer);
 
 	// Rebuilt the Widget
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+
+	/**
+	* Returns if the Contents Field exists and is the right class
+	*/
+	bool ContentsFieldIsValid();
 
 	/**
 	* Add Element to the Contents Field
@@ -71,10 +76,15 @@ public:
 
 	/**
 	* Draw the element in the contents field
-	* @param X - The column of the element
-	* @param Y - The row of the elemnt
+	* @param Index - The index of the element being drawn
 	*/
-	virtual void DrawItem(int X, int Y);
+	virtual void DrawItem(int Index);
+
+	/**
+	* Place a widget into the contents field
+	* @param Index - The index of the element being drawn
+	*/
+	void SlotWidget(UWidget* Widget, int Index);
 
 	/**
 	* Set the location of the cursor in the window
@@ -91,6 +101,22 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = Window)
 		virtual void SetIndex(int NewIndex);
+
+	/** Get the window's active status */
+	bool IsActive;
+
+	/**
+	* Get if the widget is active
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		bool GetActive();
+
+	/**
+	* Set the widget as active or not
+	* @param Active - The active status of the window
+	*/
+	UFUNCTION(BlueprintCallable, Category = Window)
+		void SetActive(bool Active);
 
 	/**
 	* The number of selectable elements in the window
@@ -115,6 +141,9 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = Window)
 		virtual bool CursorLoop();
+
+	/**
+	*/
 
 	/**
 	* Dictates if the player can confirm an option or not

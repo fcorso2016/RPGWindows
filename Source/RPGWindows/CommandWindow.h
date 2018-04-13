@@ -17,7 +17,7 @@ class RPGWINDOWS_API UCommandWindow : public USelectionWindow {
 public:
 
 	// Draw the element in the contents field
-	virtual void DrawItem(int X, int Y) override;
+	virtual void DrawItem(int Index) override;
 
 	//The number of selectable elements in the window
 	virtual int ElementCount();
@@ -29,6 +29,6 @@ public:
 private:
 	/** The list of commands of the window */
 	UPROPERTY(EditAnywhere, Category = Commands)
-		TArray<FString> CommandList;
+		TArray<FText> CommandList;
 	
 };
