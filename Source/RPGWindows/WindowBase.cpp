@@ -30,6 +30,7 @@ UWindowBase::UWindowBase(const FObjectInitializer& ObjectInitializer) : UUserWid
 	// The the size of the window
 	Width = 1920;
 	Height = 1080;
+	AutoResize = false;
 	
 }
 
@@ -66,6 +67,9 @@ TSharedRef<SWidget> UWindowBase::RebuildWidget() {
 		RootWidget->AddChild(BottomLeftTile);
 		RootWidget->AddChild(BottomMiddleTile);
 		RootWidget->AddChild(BottomRightTile);
+
+		// Draw the contents of the window
+		DrawWindowContents();
 
 		// Get the size of the window if it is slotted
 		SetSlottedSize();
@@ -135,14 +139,58 @@ void UWindowBase::DrawWindowBackground(float Width, float Height) {
 }
 
 //------------------------------------------------------------------
+// * Draw Window Contents
+//------------------------------------------------------------------
+void UWindowBase::DrawWindowContents() {
+	// No base implementation. Only exists because Unreal doesn't
+	// allow for pure virtual functions.
+}
+
+//------------------------------------------------------------------
 // * Sets the size of the window when slotted in a UMG
 //------------------------------------------------------------------
 void UWindowBase::SetSlottedSize() {
-	if (this->Slot != nullptr) {
+	if (AutoResize) {
+		ResizeWindow();
+		if (Width < MinimumSize().X) {
+			Width = MinimumSize().X;
+		}
+		if (Height < MinimumSize().Y) {
+			Height = MinimumSize().Y;
+		}
+		if (this->Slot != nullptr) {
+			if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+				Slot->SetSize(FVector2D(Width, Height));
+			}
+		}
+	} else if (this->Slot != nullptr) {
 		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
 			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
 			Width = Slot->GetSize().X;
 			Height = Slot->GetSize().Y;
+		}
+	}
+}
+
+//------------------------------------------------------------------
+// * The minimum size of the window
+//------------------------------------------------------------------
+FVector2D UWindowBase::MinimumSize() {
+	return FVector2D(2 * TILE_WIDTH * WindowScale, 2 * TILE_HEIGHT * WindowScale);
+}
+
+//------------------------------------------------------------------
+// * Automatically resized the window
+//------------------------------------------------------------------
+void UWindowBase::ResizeWindow() {
+	if (this->Slot != nullptr) {
+		if (this->Slot->IsA(UHorizontalBoxSlot::StaticClass())) {
+			UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(this->Slot);
+			Width = Slot->Size.Value;
+		} else if (this->Slot->IsA(UVerticalBoxSlot::StaticClass())) {
+			UVerticalBoxSlot* Slot = Cast<UVerticalBoxSlot>(this->Slot);
+			Height = Slot->Size.Value;
 		}
 	}
 }
@@ -231,5 +279,6 @@ void UWindowBase::PlaceTile(UImage* Tile, UPaperSprite* Sprite, float X, float Y
 void UWindowBase::SetDesiredSizeOfWindow(FVector2D Size) {
 	Width = Size.X;
 	Height = Size.Y;
+	DrawWindowBackground(Size.X, Size.Y);
 	SetDesiredSizeInViewport(Size);
 }

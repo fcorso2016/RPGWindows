@@ -41,17 +41,18 @@ public:
 	// Constructor
 	UCommandWindow(const FObjectInitializer& ObjectInitializer);
 
+	// The main body of the window
+	UPROPERTY(BlueprintReadOnly, Category = Components)
+		TArray<UTextBlock*> CommandWidgets;
+
 	// Draw the element in the contents field
 	virtual void DrawItem(int Index) override;
 
 	//The number of selectable elements in the window
 	virtual int ElementCount();
 
-	/** The array of text elements */
-	UPROPERTY(VisibleDefaultsOnly, Category = Components)
-		TArray<UTextBlock*> CommandBlocks;
-
 private:
+
 	/** The list of commands of the window */
 	UPROPERTY(EditAnywhere, Category = Commands)
 		TArray<FWindowCommand> CommandList;

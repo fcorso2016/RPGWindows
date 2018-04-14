@@ -58,6 +58,8 @@ UCLASS(Blueprintable)
 class RPGWINDOWS_API UWindowBase : public UUserWidget {
 	GENERATED_BODY()
 
+protected:
+
 	// Height and width values for the tiles
 	static const float TILE_WIDTH;
 	static const float TILE_HEIGHT;
@@ -65,7 +67,6 @@ class RPGWINDOWS_API UWindowBase : public UUserWidget {
 	// Defines the distance between the window edge and where content can be displayed
 	static const float FRAME_THICKNESS;
 
-protected:
 	// Tile objects
 	UPROPERTY(VisibleDefaultsOnly, Category = Components)
 		UImage* TopLeftTile;
@@ -127,9 +128,25 @@ protected:
 	void DrawWindowBackground(float Width, float Height);
 
 	/**
+	* Draws any contents to the window
+	*/
+	virtual void DrawWindowContents();
+
+	/**
 	* Used to update the size of the window when redrawing (only works when slotted in another widget)
 	*/
 	void SetSlottedSize();
+
+	/**
+	* Returns the minimum size of the window in question
+	*/
+	UFUNCTION(BlueprintPure, Category = Window)
+		virtual FVector2D MinimumSize();
+
+	/**
+	* Automatically adjusts the size of the window
+	*/
+	virtual void ResizeWindow();
 
 	/**
 	* Place tiles for a canvas based setup
@@ -191,6 +208,10 @@ protected:
 	/** The height of the window */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
 		float Height;
+
+	/** Tells the window if it should be automatically resized or not */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		bool AutoResize;
 
 	// The controller object used by the menu
 	UPROPERTY()

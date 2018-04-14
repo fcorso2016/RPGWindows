@@ -5,6 +5,8 @@
 #include "Runtime/UMG/Public/Components/TextBlock.h"
 #include "Runtime/UMG/Public/Blueprint/WidgetTree.h"
 #include "Runtime/Engine/Classes/Engine/Font.h"
+#include "Runtime/UMG/Public/Components/HorizontalBoxSlot.h"
+#include "Runtime/UMG/Public/Components/VerticalBoxSlot.h"
 
 //------------------------------------------------------------------
 // * Object Initilization
@@ -29,6 +31,7 @@ void UCommandWindow::DrawItem(int Index) {
 		UTextBlock* TextBlock = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
 		TextBlock->SetText(CommandList[Index].Name);
 		TextBlock->SetFont(Font);
+		CommandWidgets.Add(TextBlock);
 		SlotWidget(TextBlock, Index);
 	}
 }

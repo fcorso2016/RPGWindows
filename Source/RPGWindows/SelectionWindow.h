@@ -62,18 +62,25 @@ class RPGWINDOWS_API USelectionWindow : public UWindowBase {
 
 public:
 	// Tile objects
-	UPROPERTY(VisibleDefaultsOnly, Category = Components)
+	UPROPERTY(BlueprintReadOnly, Category = Components)
 		UImage* WindowCursor;
 
 	// Contains the elements of the window
-	UPROPERTY(VisibleDefaultsOnly, Category = Components, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = Components, meta = (BindWidget))
 		UPanelWidget* ContentsField;
 
 	// Construct
 	USelectionWindow(const FObjectInitializer& ObjectInitializer);
 
-	// Rebuilt the Widget
-	virtual TSharedRef<SWidget> RebuildWidget() override;
+protected:
+
+	// Draws any contents to the window
+	virtual void DrawWindowContents() override;
+
+	// Automatically adjusts the size of the window
+	virtual void ResizeWindow() override;
+
+public:
 
 	/**
 	* Returns if the Contents Field exists and is the right class
@@ -103,19 +110,12 @@ public:
 	*/
 	void SetCursorPosition();
 
-	/** Get the currently selected index of the window */
-	UPROPERTY(BlueprintReadOnly, Category = Window)
-		int Index;
-
 	/**
 	* Sets the index of the window and sets that information visually
 	* @param NewIndex - the new index of the window
 	*/
 	UFUNCTION(BlueprintCallable, Category = Window)
 		virtual void SetIndex(int NewIndex);
-
-	/** Get the window's active status */
-	bool IsActive;
 
 	/**
 	* Get if the widget is active
@@ -178,10 +178,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = Window)
 		virtual float ElementHeight();
 
-	/** List of all input mappings */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-		FInputActions BaseInputs;
-
 	/**
 	* Determines if the key that is currently pressed is mapped to the given action mapping
 	* @param Key - The key being pressed
@@ -214,6 +210,17 @@ public:
 		FProcessCancel CancelDelegate;
 
 protected:
+
+	/** Get the currently selected index of the window */
+	UPROPERTY(BlueprintReadOnly, Category = Window)
+		int Index;
+
+	/** Get the window's active status */
+	bool IsActive;
+
+	/** List of all input mappings */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+		FInputActions BaseInputs;
 
 	/** The scale of the cursor in the window */
 	UPROPERTY(EditAnywhere, Category = Window, meta = (UIMin = 1, ClampMin = 1))

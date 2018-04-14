@@ -48,11 +48,10 @@ USelectionWindow::USelectionWindow(const FObjectInitializer& ObjectInitializer) 
 }
 
 //------------------------------------------------------------------
-// * Rebuild the Widget
+// * Draw Window Contents
 //------------------------------------------------------------------
-TSharedRef<SWidget> USelectionWindow::RebuildWidget() {
-	// Get the original widget
-	TSharedRef<SWidget> Widget = Super::RebuildWidget();
+void USelectionWindow::DrawWindowContents() {
+	Super::DrawWindowContents();
 
 	if (MainBody != nullptr) {
 
@@ -77,7 +76,37 @@ TSharedRef<SWidget> USelectionWindow::RebuildWidget() {
 
 	}
 
-	return Widget;
+}
+
+//------------------------------------------------------------------
+// * Automatically resized the window
+//------------------------------------------------------------------
+void USelectionWindow::ResizeWindow() {
+	Super::ResizeWindow();
+	if (ElementCount() > 1) {
+		if (ColumnCount() > 1) {
+			Width = 2 * FRAME_THICKNESS * FrameScale + ColumnCount() * ElementWidth();
+		} else if (this->Slot != nullptr) {
+			if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+				Width = Slot->GetSize().X;
+			}
+		}
+		if (RowCount() > 1) {
+			Height = 2 * FRAME_THICKNESS * FrameScale + RowCount() * ElementHeight();
+		} else if (this->Slot != nullptr) {
+			if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+				Height = Slot->GetSize().Y;
+			}
+		}
+	} else if (this->Slot != nullptr) {
+		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
+			Width = Slot->GetSize().X;
+			Height = Slot->GetSize().Y;
+		}
+	}
 }
 
 //------------------------------------------------------------------
@@ -122,6 +151,15 @@ void USelectionWindow::SlotWidget(UWidget* Widget, int Index) {
 	int Row = Index / ColumnCount();
 	int Column = Index % ColumnCount();
 	if (ContentsFieldIsValid()) {
+		if (ContentsField->IsA(UVerticalBox::StaticClass())) {
+			UVerticalBox* VerticalBox = Cast<UVerticalBox>(ContentsField);
+			VerticalBox->AddChildToVerticalBox(Widget);
+		} else if (ContentsField->IsA(UHorizontalBox::StaticClass())) {
+			UHorizontalBox* HorizontalBox = Cast<UHorizontalBox>(ContentsField);
+			HorizontalBox->AddChildToHorizontalBox(Widget);
+		} else {
+			ContentsField->AddChild(Widget);
+		}
 		ContentsField->AddChild(Widget);
 		if (ContentsField->IsA(UUniformGridPanel::StaticClass())) {
 			UUniformGridSlot* Slot = Cast<UUniformGridSlot>(Widget->Slot);
@@ -228,23 +266,58 @@ bool USelectionWindow::CanCancel() {
 	return true;
 }
 
-
 //------------------------------------------------------------------
-// * Valid Action Input
+// * Element Width
 //------------------------------------------------------------------
 float USelectionWindow::ElementWidth() {
 	if (ContentsField != nullptr) {
-		return ContentsField->GetDesiredSize().X / ColumnCount();
+		if (IsDesignTime()) {
+			return static_cast<SPanel&>(ContentsField->TakeWidget().Get()).ComputeDesiredSize(1.f).X / ColumnCount();
+			/*
+			if (ContentsField->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ContentsField->Slot);
+				Slot->SaveBaseLayout();
+				Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+				Slot->RebaseLayout(false);
+				float ElementWidth = Slot->GetSize().X / ColumnCount();
+				Slot->SaveBaseLayout();
+				Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+				Slot->RebaseLayout(false);
+				return ElementWidth;
+			}
+			*/
+		} else {
+			return ContentsField->GetDesiredSize().X / ColumnCount();
+		}
+		
 	}
 	return 0.f;
 }
 
 //------------------------------------------------------------------
-// * Valid Action Input
+// * Element Height
 //------------------------------------------------------------------
 float USelectionWindow::ElementHeight() {
 	if (ContentsField != nullptr) {
-		return ContentsField->GetDesiredSize().Y / RowCount();
+		if (IsDesignTime()) {
+			return static_cast<SPanel&>(ContentsField->TakeWidget().Get()).ComputeDesiredSize(1.f).Y / RowCount();
+			/*
+			if (ContentsField->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ContentsField->Slot);
+				Slot->SaveBaseLayout();
+				Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+				Slot->RebaseLayout(false);
+				float ElementHeight = Slot->GetSize().Y / ColumnCount();
+				Slot->SaveBaseLayout();
+				Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+				Slot->RebaseLayout(false);
+				return ElementHeight;
+			}
+			*/
+		} else {
+			return ContentsField->GetDesiredSize().Y / RowCount();
+		}
+		
 	}
 	return 0.f;
 }
