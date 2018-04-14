@@ -280,9 +280,9 @@ FReply USelectionWindow::NativeOnKeyDown(const FGeometry& MyGeometry, const FKey
 	FKey Key = InKeyEvent.GetKey();
 	ProcessCursorInput(Key, Handled);
 	if (ValidInput(Key, BaseInputs.ConfirmInput)) {
-		ConfirmDelegate.ExecuteIfBound();
+		ProcessConfirm();
 	} else if (ValidInput(Key, BaseInputs.CancelInput)) {
-		CancelDelegate.ExecuteIfBound();
+		CancelDelegate.Broadcast(); // .ExecuteIfBound();
 	}
 	
 
@@ -312,7 +312,7 @@ void USelectionWindow::ProcessCursorInput(const FKey& Key, bool& Handled) {
 		}
 
 		if (ValidInput(Key, BaseInputs.DownInput)) {
-			if (Index <= ElementCount() - ColumnCount()) {
+			if (Index < ElementCount() - ColumnCount()) {
 				SetIndex(Index + ColumnCount());
 				Handled = true;
 			} else if (CursorLoop()) {
@@ -341,4 +341,11 @@ void USelectionWindow::ProcessCursorInput(const FKey& Key, bool& Handled) {
 			}
 		}
 	}
+}
+
+//------------------------------------------------------------------
+// * Process Movement from the Cursor
+//------------------------------------------------------------------
+void USelectionWindow::ProcessConfirm() {
+	ConfirmDelegate.Broadcast(); // ExecuteIfBound();
 }

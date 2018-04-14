@@ -15,6 +15,7 @@ struct FWindowCommand {
 	GENERATED_BODY()
 
 public:
+
 	/** The name of the command */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Commands)
 		FText Name;
@@ -37,6 +38,8 @@ class RPGWINDOWS_API UCommandWindow : public USelectionWindow {
 	GENERATED_BODY()
 	
 public:
+	// Constructor
+	UCommandWindow(const FObjectInitializer& ObjectInitializer);
 
 	// Draw the element in the contents field
 	virtual void DrawItem(int Index) override;
@@ -52,5 +55,9 @@ private:
 	/** The list of commands of the window */
 	UPROPERTY(EditAnywhere, Category = Commands)
 		TArray<FWindowCommand> CommandList;
+
+	/** The font sized used by the window */
+	UPROPERTY(EditAnywhere, Category = Commands)
+		FSlateFontInfo Font;
 	
 };

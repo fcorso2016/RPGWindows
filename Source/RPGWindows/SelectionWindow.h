@@ -8,10 +8,10 @@
 #include "SelectionWindow.generated.h"
 
 /** Delegate for when the user presses confirm */
-DECLARE_DELEGATE(FProcessConfirm);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProcessConfirm);
 
 /** Delegate for when the user presses cancel */
-DECLARE_DELEGATE(FProcessCancel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProcessCancel); // DECLARE_DELEGATE
 
 /**
 * Struct that stores the input handlers for the window
@@ -200,11 +200,18 @@ public:
 	*/
 	void ProcessCursorInput(const FKey& Key, bool& Handled);
 
+	/**
+	* Process the input when the player confirms an options
+	*/
+	virtual void ProcessConfirm();
+
 	/** The delegate bound to confirm */
-	FProcessConfirm ConfirmDelegate;
+	UPROPERTY(BlueprintAssignable, Category = Window)
+		FProcessConfirm ConfirmDelegate;
 
 	/** The delegate bound to cancel */
-	FProcessCancel CancelDelegate;
+	UPROPERTY(BlueprintAssignable, Category = Window)
+		FProcessCancel CancelDelegate;
 
 protected:
 
