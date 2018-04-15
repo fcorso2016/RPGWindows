@@ -5,12 +5,6 @@
 #include "Runtime/Engine/Classes/GameFramework/PlayerInput.h"
 #include "Runtime/UMG/Public/Blueprint/WidgetTree.h"
 #include "Runtime/UMG/Public/Components/CanvasPanelSlot.h"
-#include "Runtime/UMG/Public/Components/GridPanel.h"
-#include "Runtime/UMG/Public/Components/HorizontalBox.h"
-#include "Runtime/UMG/Public/Components/UniformGridPanel.h"
-#include "Runtime/UMG/Public/Components/VerticalBox.h"
-#include "Runtime/UMG/Public/Components/WrapBox.h"
-#include "Runtime/UMG/Public/Components/GridSlot.h"
 #include "Runtime/UMG/Public/Components/UniformGridSlot.h"
 
 // For debug purposes
@@ -34,6 +28,14 @@ USelectionWindow::USelectionWindow(const FObjectInitializer& ObjectInitializer) 
 	// Set the cursor scale
 	CursorScale = 1;
 
+	// Set the default width and height of an element in the selection pane
+	AutoElementWidth = 100.f;
+	AutoElementHeight = 40.f;
+	AutoAdjustWidth = false;
+	AutoAdjustHeight = true;
+	HorizontalAlignment = EHorizontalAlignment::HAlign_Left;
+	VerticalAlignment = EVerticalAlignment::VAlign_Top;
+
 	// Set the index of the window to 0
 	SetIndex(0);
 	IsActive = false;
@@ -56,7 +58,7 @@ void USelectionWindow::DrawWindowContents() {
 	if (MainBody != nullptr) {
 
 		// Create the Contents of the Window
-		if (ContentsFieldIsValid()) {
+		if (ContentsField != nullptr) {
 			MainBody->AddChild(ContentsField);
 			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ContentsField->Slot);
 			Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
@@ -83,48 +85,22 @@ void USelectionWindow::DrawWindowContents() {
 //------------------------------------------------------------------
 void USelectionWindow::ResizeWindow() {
 	Super::ResizeWindow();
-	if (ElementCount() > 1) {
-		if (ColumnCount() > 1) {
-			Width = 2 * FRAME_THICKNESS * FrameScale + ColumnCount() * ElementWidth();
-		} else if (this->Slot != nullptr) {
-			if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
-				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
-				Width = Slot->GetSize().X;
-			}
-		}
-		if (RowCount() > 1) {
-			Height = 2 * FRAME_THICKNESS * FrameScale + RowCount() * ElementHeight();
-		} else if (this->Slot != nullptr) {
-			if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
-				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
-				Height = Slot->GetSize().Y;
-			}
-		}
+	if (AutoAdjustWidth) {
+		Width = 2 * FRAME_THICKNESS * FrameScale + ColumnCount() * ElementWidth();
 	} else if (this->Slot != nullptr) {
 		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
 			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
 			Width = Slot->GetSize().X;
+		}
+	}
+	if (AutoAdjustHeight) {
+		Height = 2 * FRAME_THICKNESS * FrameScale + RowCount() * ElementHeight();
+	} else if (this->Slot != nullptr) {
+		if (this->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
+			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(this->Slot);
 			Height = Slot->GetSize().Y;
 		}
 	}
-}
-
-//------------------------------------------------------------------
-// * Checks if the Contents Field is Valid
-//------------------------------------------------------------------
-bool USelectionWindow::ContentsFieldIsValid() {
-	// Set the list of valid classes
-	const static TArray<UClass*> ValidClasses({ UGridPanel::StaticClass(), UHorizontalBox::StaticClass(), UUniformGridPanel::StaticClass(), UVerticalBox::StaticClass(), UWrapBox::StaticClass() });
-
-	// Check if the field is valid
-	if (ContentsField != nullptr) {
-		for (UClass* ValidClass : ValidClasses) {
-			if (ContentsField->IsA(ValidClass)) {
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 //------------------------------------------------------------------
@@ -150,25 +126,16 @@ void USelectionWindow::DrawItem(int Index) {
 void USelectionWindow::SlotWidget(UWidget* Widget, int Index) {
 	int Row = Index / ColumnCount();
 	int Column = Index % ColumnCount();
-	if (ContentsFieldIsValid()) {
-		if (ContentsField->IsA(UVerticalBox::StaticClass())) {
-			UVerticalBox* VerticalBox = Cast<UVerticalBox>(ContentsField);
-			VerticalBox->AddChildToVerticalBox(Widget);
-		} else if (ContentsField->IsA(UHorizontalBox::StaticClass())) {
-			UHorizontalBox* HorizontalBox = Cast<UHorizontalBox>(ContentsField);
-			HorizontalBox->AddChildToHorizontalBox(Widget);
-		} else {
-			ContentsField->AddChild(Widget);
-		}
-		ContentsField->AddChild(Widget);
-		if (ContentsField->IsA(UUniformGridPanel::StaticClass())) {
-			UUniformGridSlot* Slot = Cast<UUniformGridSlot>(Widget->Slot);
-			Slot->SetRow(Row);
-			Slot->SetColumn(Column);
-		} else if (ContentsField->IsA(UGridPanel::StaticClass())) {
-			UGridSlot* Slot = Cast<UGridSlot>(Widget->Slot);
-			Slot->SetRow(Row);
-			Slot->SetColumn(Column);
+	if (ContentsField != nullptr) {
+		ContentsField->AddChildToUniformGrid(Widget);
+		if (Widget->Slot != nullptr) {
+			if (Widget->Slot->IsA(UUniformGridSlot::StaticClass())) {
+				UUniformGridSlot* Slot = Cast<UUniformGridSlot>(Widget->Slot);
+				Slot->SetRow(Row);
+				Slot->SetColumn(Column);
+				Slot->SetHorizontalAlignment(HorizontalAlignment);
+				Slot->SetVerticalAlignment(VerticalAlignment);
+			}
 		}
 	}
 }
@@ -270,56 +237,26 @@ bool USelectionWindow::CanCancel() {
 // * Element Width
 //------------------------------------------------------------------
 float USelectionWindow::ElementWidth() {
-	if (ContentsField != nullptr) {
-		if (IsDesignTime()) {
-			return static_cast<SPanel&>(ContentsField->TakeWidget().Get()).ComputeDesiredSize(1.f).X / ColumnCount();
-			/*
-			if (ContentsField->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
-				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ContentsField->Slot);
-				Slot->SaveBaseLayout();
-				Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
-				Slot->RebaseLayout(false);
-				float ElementWidth = Slot->GetSize().X / ColumnCount();
-				Slot->SaveBaseLayout();
-				Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
-				Slot->RebaseLayout(false);
-				return ElementWidth;
-			}
-			*/
-		} else {
-			return ContentsField->GetDesiredSize().X / ColumnCount();
-		}
-		
+	if (AutoResize) {
+		return AutoElementWidth;
+	} else if (ContentsField != nullptr) {
+		return ContentsField->GetDesiredSize().X / ColumnCount();
+	} else {
+		return 0.f;
 	}
-	return 0.f;
 }
 
 //------------------------------------------------------------------
 // * Element Height
 //------------------------------------------------------------------
 float USelectionWindow::ElementHeight() {
-	if (ContentsField != nullptr) {
-		if (IsDesignTime()) {
-			return static_cast<SPanel&>(ContentsField->TakeWidget().Get()).ComputeDesiredSize(1.f).Y / RowCount();
-			/*
-			if (ContentsField->Slot->IsA(UCanvasPanelSlot::StaticClass())) {
-				UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ContentsField->Slot);
-				Slot->SaveBaseLayout();
-				Slot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
-				Slot->RebaseLayout(false);
-				float ElementHeight = Slot->GetSize().Y / ColumnCount();
-				Slot->SaveBaseLayout();
-				Slot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
-				Slot->RebaseLayout(false);
-				return ElementHeight;
-			}
-			*/
-		} else {
-			return ContentsField->GetDesiredSize().Y / RowCount();
-		}
-		
+	if (AutoResize) {
+		return AutoElementHeight;
+	} else if (ContentsField != nullptr) {
+		return ContentsField->GetDesiredSize().Y / RowCount();
+	} else {
+		return 0.f;
 	}
-	return 0.f;
 }
 
 //------------------------------------------------------------------
@@ -355,7 +292,7 @@ FReply USelectionWindow::NativeOnKeyDown(const FGeometry& MyGeometry, const FKey
 	if (ValidInput(Key, BaseInputs.ConfirmInput)) {
 		ProcessConfirm();
 	} else if (ValidInput(Key, BaseInputs.CancelInput)) {
-		CancelDelegate.Broadcast(); // .ExecuteIfBound();
+		OnCancel.Broadcast();
 	}
 	
 
@@ -420,5 +357,5 @@ void USelectionWindow::ProcessCursorInput(const FKey& Key, bool& Handled) {
 // * Process Movement from the Cursor
 //------------------------------------------------------------------
 void USelectionWindow::ProcessConfirm() {
-	ConfirmDelegate.Broadcast(); // ExecuteIfBound();
+	OnConfirm.Broadcast();
 }

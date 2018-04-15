@@ -25,9 +25,7 @@ UCommandWindow::UCommandWindow(const FObjectInitializer& ObjectInitializer) : US
 // * Slot an Element into the Contents Field
 //------------------------------------------------------------------
 void UCommandWindow::DrawItem(int Index) {
-	Super::DrawItem(Index);
-
-	if (ContentsFieldIsValid()) {
+	if (ContentsField != nullptr) {
 		UTextBlock* TextBlock = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
 		TextBlock->SetText(CommandList[Index].Name);
 		TextBlock->SetFont(Font);
@@ -41,4 +39,11 @@ void UCommandWindow::DrawItem(int Index) {
 //------------------------------------------------------------------
 int UCommandWindow::ElementCount() {
 	return CommandList.Num();
+}
+
+//------------------------------------------------------------------
+// * Process Movement from the Cursor
+//------------------------------------------------------------------
+void UCommandWindow::ProcessConfirm() {
+	OnCommand.Broadcast(CommandList[Index].InternalName);
 }

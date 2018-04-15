@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "WindowBase.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
+#include "Runtime/UMG/Public/Components/UniformGridPanel.h"
 #include "SelectionWindow.generated.h"
 
 /** Delegate for when the user presses confirm */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProcessConfirm);
 
 /** Delegate for when the user presses cancel */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProcessCancel); // DECLARE_DELEGATE
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProcessCancel);
 
 /**
 * Struct that stores the input handlers for the window
@@ -67,7 +68,7 @@ public:
 
 	// Contains the elements of the window
 	UPROPERTY(BlueprintReadOnly, Category = Components, meta = (BindWidget))
-		UPanelWidget* ContentsField;
+		UUniformGridPanel* ContentsField;
 
 	// Construct
 	USelectionWindow(const FObjectInitializer& ObjectInitializer);
@@ -81,11 +82,6 @@ protected:
 	virtual void ResizeWindow() override;
 
 public:
-
-	/**
-	* Returns if the Contents Field exists and is the right class
-	*/
-	bool ContentsFieldIsValid();
 
 	/**
 	* Add Element to the Contents Field
@@ -202,12 +198,12 @@ public:
 	virtual void ProcessConfirm();
 
 	/** The delegate bound to confirm */
-	UPROPERTY(BlueprintAssignable, Category = Window)
-		FProcessConfirm ConfirmDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Selection|Confirm")
+		FProcessConfirm OnConfirm;
 
 	/** The delegate bound to cancel */
-	UPROPERTY(BlueprintAssignable, Category = Window)
-		FProcessCancel CancelDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Selection|Cancel")
+		FProcessCancel OnCancel;
 
 protected:
 
@@ -217,6 +213,30 @@ protected:
 
 	/** Get the window's active status */
 	bool IsActive;
+
+	/** The width of any one element when resized automatically (some subclasses override this value) */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		float AutoElementWidth;
+
+	/** The width of any one element when resized automatically (some subclasses override this value) */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		float AutoElementHeight;
+
+	/** Automatically adjust the width of the window? */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		bool AutoAdjustWidth;
+
+	/** Automatically adjust the height of the window? */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		bool AutoAdjustHeight;
+
+	/** The horizontal alignment of the elements in the window */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		TEnumAsByte<EHorizontalAlignment> HorizontalAlignment;
+
+	/** The vertical alignment of the elements in the window */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Window)
+		TEnumAsByte<EVerticalAlignment> VerticalAlignment;
 
 	/** List of all input mappings */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)

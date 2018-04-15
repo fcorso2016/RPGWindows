@@ -7,6 +7,9 @@
 #include "Runtime/UMG/Public/Components/TextBlock.h"
 #include "CommandWindow.generated.h"
 
+/** Delegate for when the user selects a command in the command window */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProcessCommand, FName, CommandName);
+
 /**
 * The information for a command in the game.
 */
@@ -33,7 +36,7 @@ public:
 /**
  * Window display a list of commands to be selected from
  */
-UCLASS()
+UCLASS(HideCategories = "Selection|Confirm")
 class RPGWINDOWS_API UCommandWindow : public USelectionWindow {
 	GENERATED_BODY()
 	
@@ -50,6 +53,13 @@ public:
 
 	//The number of selectable elements in the window
 	virtual int ElementCount();
+
+	// Process the input when the player confirms an options
+	virtual void ProcessConfirm();
+
+	/** An array of command deleagates */
+	UPROPERTY(BlueprintAssignable, Category = "Selection|Commands")
+		FProcessCommand OnCommand;
 
 private:
 
